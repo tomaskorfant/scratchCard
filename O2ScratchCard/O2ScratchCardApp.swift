@@ -10,11 +10,12 @@ import SwiftData
 
 @main
 struct O2ScratchCardApp: App {
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            ScratchCard.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(schema: schema)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -24,8 +25,18 @@ struct O2ScratchCardApp: App {
     }()
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        var cards = try? sharedModelContainer.mainContext.fetch(FetchDescriptor<ScratchCard>())
+        let firstCard: ScratchCard
+        if let card = cards?.first {
+            firstCard = card
+        } else {
+            firstCard = ScratchCard()
+            sharedModelContainer.mainContext.insert(firstCard)
+        }
+
+        return WindowGroup {
+            ContentView(card: firstCard)
+                .withErrorHandling()
         }
         .modelContainer(sharedModelContainer)
     }
